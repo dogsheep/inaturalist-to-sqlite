@@ -2,7 +2,7 @@ import click
 import os
 import json
 import sqlite_utils
-from .utils import save_observation, fetch_all_observations
+from .utils import save_observation, fetch_all_observations, ensure_views
 
 
 @click.command()
@@ -52,5 +52,6 @@ def cli(db_path, username, load, save, silent):
                 bar.update(1)
                 if save:
                     saved.append(observation)
+    ensure_views(db)
     if save:
         json.dump(saved, save, indent=4)

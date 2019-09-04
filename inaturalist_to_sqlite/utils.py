@@ -1,5 +1,6 @@
 import datetime
 import requests
+import textwrap
 from sqlite_utils.db import AlterError, ForeignKey
 
 
@@ -160,3 +161,32 @@ def fetch_all_observations(username, count_first=False):
         for item in data["results"]:
             yield item
         id_below = min(r["id"] for r in data["results"])
+
+
+def ensure_views(db):
+    for name, sql in (
+        (
+            "observations_with_photos",
+            textwrap.dedent(
+                """
+            select
+                observations.id,
+                species_guess,
+                place_guess,
+                created_at,
+                url,
+                json_object("img_src", min(photos.medium_url)) as photo,
+                latitude,
+                longitude
+            from observations
+                join observations_photos on observations.id = observations_photos.observations_id
+                join photos on observations_photos.photos_id = photos.id
+            group by observations.id
+            order by created_at desc"""
+            ),
+        ),
+    ):
+        try:
+            db.create_view(name, sql)
+        except Exception:
+            pass
