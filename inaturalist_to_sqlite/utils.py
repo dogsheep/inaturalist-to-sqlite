@@ -87,6 +87,8 @@ def save_photo(photo, db):
     dims = photo.pop("original_dimensions") or {}
     photo["height"] = dims.get("height")
     photo["width"] = dims.get("width")
+    if not photo.get("medium_url") and "/square.jpg" in (photo.get("url") or ""):
+        photo["medium_url"] = photo["url"].replace("/square.jpg", "/medium.jpg")
     return (
         db["photos"]
         .upsert(
