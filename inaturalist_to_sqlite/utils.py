@@ -138,42 +138,10 @@ def save_taxon(taxon, db):
     )
 
 
-def ensure_foreign_keys(db):
-    return
-    existing = []
-    for table in db.tables:
-        existing.extend(table.foreign_keys)
-    desired = [
-        ForeignKey(
-            table="checkins", column="createdBy", other_table="users", other_column="id"
-        ),
-        ForeignKey(
-            table="checkins", column="event", other_table="events", other_column="id"
-        ),
-        ForeignKey(
-            table="checkins",
-            column="sticker",
-            other_table="stickers",
-            other_column="id",
-        ),
-    ]
-    for fk in desired:
-        if fk not in existing:
-            try:
-                db[fk.table].add_foreign_key(fk.column, fk.other_table, fk.other_column)
-            except AlterError:
-                pass
-
-
 def fetch_all_observations(username, count_first=False):
     # "If you need to retrieve large numbers of records, use the per_page and id_above or id_below parameters instead."
     # If count_first is True it first yields the total checkins count
-    params = {
-        "user_login": username,
-        "order": "desc",
-        "order_by": "id",
-        "per_page": 30
-    }
+    params = {"user_login": username, "order": "desc", "order_by": "id", "per_page": 30}
     id_below = None
     first = True
     while True:

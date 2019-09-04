@@ -54,4 +54,4 @@ def cli(db_path, username, load, save, silent):
                     saved.append(observation)
     ensure_foreign_keys(db)
     if save:
-        json.dump(saved, save)
+        json.dump(saved, save, indent=4)
