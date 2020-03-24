@@ -26,7 +26,7 @@ setup(
         [console_scripts]
         inaturalist-to-sqlite=inaturalist_to_sqlite.cli:cli
     """,
-    install_requires=["sqlite-utils~=1.10", "click", "requests"],
+    install_requires=["sqlite-utils~=2.0", "click", "requests"],
     extras_require={"test": ["pytest"]},
     tests_require=["inaturalist-to-sqlite[test]"],
 )

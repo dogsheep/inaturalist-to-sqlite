@@ -20,22 +20,34 @@ def save_observation(observation, db):
         observation["taxon"] = save_taxon(observation["taxon"], db)
     observation["user"] = (
         db["users"]
-        .upsert(observation["user"], pk="id", column_order=("id", "login", "name"))
+        .insert(
+            observation["user"],
+            pk="id",
+            column_order=("id", "login", "name"),
+            replace=True,
+        )
         .last_pk
     )
     photos = observation.pop("photos", None) or []
     identifications = observation.pop("identifications", None) or []
     observation_id = (
         db["observations"]
-        .upsert(observation, pk="id", foreign_keys=("taxon", "user"))
+        .insert(
+            observation,
+            pk="id",
+            foreign_keys=("taxon", "user"),
+            replace=True,
+            alter=True,
+        )
         .last_pk
     )
     for photo in photos:
         photo_id = save_photo(photo, db)
-        db["observations_photos"].upsert(
+        db["observations_photos"].insert(
             {"observations_id": observation_id, "photos_id": photo_id},
             pk=("observations_id", "photos_id"),
             foreign_keys=("observations_id", "photos_id"),
+            replace=True,
         )
     for identification in identifications:
         save_identification(identification, observation_id, db)
@@ -55,7 +67,7 @@ def save_identification(identification, observation_id, db):
     del identification["taxon_id"]
     return (
         db["identifications"]
-        .upsert(
+        .insert(
             identification,
             pk="id",
             foreign_keys=(
@@ -72,6 +84,7 @@ def save_identification(identification, observation_id, db):
                 "taxon",
                 "previous_observation_taxon",
             ),
+            replace=True,
         )
         .last_pk
     )
@@ -79,7 +92,9 @@ def save_identification(identification, observation_id, db):
 
 def save_user(user, db):
     return (
-        db["users"].upsert(user, pk="id", column_order=("id", "login", "name")).last_pk
+        db["users"]
+        .insert(user, pk="id", column_order=("id", "login", "name"), replace=True)
+        .last_pk
     )
 
 
@@ -92,11 +107,12 @@ def save_photo(photo, db):
         photo["medium_url"] = photo["url"].replace("/square.jpg", "/medium.jpg")
     return (
         db["photos"]
-        .upsert(
+        .insert(
             photo,
             pk="id",
             alter=True,
             column_order=("preferred_common_name", "name", "rank"),
+            replace=True,
         )
         .last_pk
     )
@@ -111,7 +127,7 @@ def save_taxon(taxon, db):
     if taxon.get("conservation_status"):
         taxon["conservation_status"] = (
             db["conservation_status"]
-            .upsert(taxon["conservation_status"], pk="status_name")
+            .insert(taxon["conservation_status"], pk="status_name", replace=True)
             .last_pk
         )
     ancestors = taxon.pop("ancestors", None)
@@ -120,13 +136,13 @@ def save_taxon(taxon, db):
             save_taxon(ancestor, db)
     return (
         db["taxons"]
-        .upsert(
+        .insert(
             taxon,
             pk="id",
             alter=True,
             foreign_keys=(
-                ("conservation_status", "conservation_status"),
-                ("default_photo", "photos"),
+                # ("conservation_status", "conservation_status", "status_name"),
+                ("default_photo", "photos", "id"),
             ),
             column_order=(
                 "id",
@@ -136,6 +152,7 @@ def save_taxon(taxon, db):
                 "default_photo",
                 "conservation_status",
             ),
+            replace=True,
         )
         .last_pk
     )
