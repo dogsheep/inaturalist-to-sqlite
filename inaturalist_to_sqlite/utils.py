@@ -124,10 +124,14 @@ def save_taxon(taxon, db):
         taxon["default_photo"] = save_photo(taxon["default_photo"], db)
     else:
         taxon["default_photo"] = None
+    if not db["conservation_status"].exists():
+        db["conservation_status"].create({
+            "status_name": str
+        }, pk="status_name")
     if taxon.get("conservation_status"):
         taxon["conservation_status"] = (
             db["conservation_status"]
-            .insert(taxon["conservation_status"], pk="status_name", replace=True)
+            .insert(taxon["conservation_status"], pk="status_name", replace=True, alter=True)
             .last_pk
         )
     ancestors = taxon.pop("ancestors", None)
@@ -141,7 +145,7 @@ def save_taxon(taxon, db):
             pk="id",
             alter=True,
             foreign_keys=(
-                # ("conservation_status", "conservation_status", "status_name"),
+                ("conservation_status", "conservation_status", "status_name"),
                 ("default_photo", "photos", "id"),
             ),
             column_order=(
