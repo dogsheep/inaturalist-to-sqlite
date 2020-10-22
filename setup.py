@@ -1,7 +1,7 @@
 from setuptools import setup
 import os
 
-VERSION = "0.2"
+VERSION = "0.2.1"
 
 
 def get_long_description():
@@ -26,7 +26,7 @@ setup(
         [console_scripts]
         inaturalist-to-sqlite=inaturalist_to_sqlite.cli:cli
     """,
-    install_requires=["sqlite-utils~=2.0", "click", "requests"],
+    install_requires=["sqlite-utils>=2.0", "click", "requests"],
     extras_require={"test": ["pytest"]},
     tests_require=["inaturalist-to-sqlite[test]"],
 )
